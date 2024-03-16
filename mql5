@@ -1,0 +1,76 @@
+mql5
+//+------------------------------------------------------------------+
+//| Overlay Chart Indicator                                          |
+//|                                                                  |
+//| Developer's Site: forexroboteasy.com                             |
+//| Development: Forex Robot Easy Team                               |
+//|                                                                  |
+//| This code allows traders to view price action of different       |
+//| timeframes on a single chart, enhancing currency correlation     |
+//| analysis.                                                        |
+//+------------------------------------------------------------------+
+
+#property indicator_chart_window
+#property indicator_buffers 2
+#property indicator_color1 Lime
+#property indicator_color2 Red
+
+input string Symbol1 = 'EURUSD';
+input string Symbol2 = 'USDJPY';
+
+double OverlayBuffer1[];
+double OverlayBuffer2[];
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Define symbol1 and symbol2 as different currency pairs
+   SymbolSelect(Symbol1, true);
+   SymbolSelect(Symbol2, true);
+   
+   // Set indicator buffers
+   SetIndexBuffer(0, OverlayBuffer1);
+   SetIndexBuffer(1, OverlayBuffer2);
+   
+   // Set indicator labels
+   IndicatorSetString(INDICATOR_SHORTNAME, 'Overlay Chart Indicator');
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization function                       |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Remove indicator buffers
+   ArrayResize(OverlayBuffer1, 0);
+   ArrayResize(OverlayBuffer2, 0);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+   int limit = MathMin(rates_total, Bars - prev_calculated);
+   
+   for (int i = 0; i < limit; i++)
+   {
+      OverlayBuffer1[i] = close[i];
+      OverlayBuffer2[i] = iMA(Symbol2, 0, 1, 0, MODE_SMA, PRICE_CLOSE, i);
+   }
+   
+   return(rates_total);
+}
